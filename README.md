@@ -17,7 +17,7 @@ Reset the bit back to normal mode by clicking it one more time after it's set to
 Change input and output volume as well as wet/dry blend by clicking on the BitDOS logo. 
 Change the mode from unsigned 8bits to signed 8bits by clicking the floppy drive.
 
-![image](https://github.com/astriiddev/BitDos/assets/98296288/c733df28-7855-48d2-b5db-0b569b0a3df0)
+![image](https://github.com/astriiddev/BitDOS/assets/98296288/02fd438b-adc0-4ab7-b6f4-1df40d8a9948)
 
 (Hint: green floppy LED is unsigned mode, red is signed mode)
 
