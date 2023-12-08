@@ -191,9 +191,6 @@ void NumberScreen::mouseDrag(const juce::MouseEvent& e)
         gainChange = mouseDragY / gainChangeScale;
 
         audioProcessor.setPreGain(audioProcessor.getPreGain() + gainChange);
-
-        /*repaint(bits[7].rect);
-        repaint(bits[6].rect);*/
     }
 
     if (editingPostGain)
@@ -201,9 +198,6 @@ void NumberScreen::mouseDrag(const juce::MouseEvent& e)
         gainChange = mouseDragY / gainChangeScale;
 
         audioProcessor.setPostGain(audioProcessor.getPostGain() + gainChange);
-
-        /*repaint(bits[4].rect);
-        repaint(bits[3].rect);*/
     }
 
     if (editingBlend)
@@ -211,9 +205,6 @@ void NumberScreen::mouseDrag(const juce::MouseEvent& e)
         gainChange = mouseDragY / gainChangeScale;
 
         audioProcessor.setBlend(audioProcessor.getBlend() + gainChange);
-
-        /*repaint(bits[1].rect);
-        repaint(bits[0].rect);*/
     }
 
     lastMouseY = abs(mouseDragY);
@@ -292,7 +283,6 @@ void NumberScreen::bitInit()
     }
 }
 
-static int repaintNum = 0;
 void NumberScreen::timerCallback()
 {
     static bool lastMode = false;
@@ -308,8 +298,6 @@ void NumberScreen::timerCallback()
     if (lastMode == currBitMode && lastSamp == currRealSamp)
         if (!(lastMousePos != mousePos && mouseOverBit > -1)) return;
 
-    /*repaintNum++;
-    DBG("Repaint! " << repaintNum);*/
     for (int i = 7; i >= 0; i--)
         repaint(bits[i].rect);
 

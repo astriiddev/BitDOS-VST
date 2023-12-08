@@ -21,11 +21,14 @@ class LookAndFeel : public juce::LookAndFeel_V4
 public:
     LookAndFeel();
     ~LookAndFeel() override;
-
-    /* Custom global font */
+    
     const juce::Font getCustomFont();
     juce::Typeface::Ptr getTypefaceForFont(const juce::Font& f) override;
 
 private:
+
+    juce::Font sevenSegFont;
+    juce::Typeface::Ptr typeface;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LookAndFeel)
 };

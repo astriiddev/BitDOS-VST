@@ -14,9 +14,9 @@
 //==============================================================================
 LookAndFeel::LookAndFeel()
 {
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-
+    /* Importing binary of custom font */
+    typeface = juce::Typeface::createSystemTypefaceFor(BinaryData::seg_7_otf, BinaryData::seg_7_otfSize);
+    sevenSegFont = juce::Font(typeface);
 }
 
 LookAndFeel::~LookAndFeel()
@@ -25,13 +25,10 @@ LookAndFeel::~LookAndFeel()
 
 const juce::Font LookAndFeel::getCustomFont()
 {
-    /* Importing binary of custom font */
-    static auto typeface = juce::Typeface::createSystemTypefaceFor(BinaryData::seg_7_otf, BinaryData::seg_7_otfSize);
-    return juce::Font(typeface);
+    return sevenSegFont;
 }
 
 juce::Typeface::Ptr LookAndFeel::getTypefaceForFont(const juce::Font&)
 {
-    /* Returning font typeface */
-    return getCustomFont().getTypefacePtr();
+    return typeface;
 }
