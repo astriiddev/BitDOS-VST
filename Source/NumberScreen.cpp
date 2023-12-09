@@ -71,7 +71,7 @@ void NumberScreen::paint (juce::Graphics& g)
 
         g.setColour(LED_WHT);
 
-        g.setFont(juce::Font((juce::Font::getDefaultSansSerifFontName(), 18.0f)));
+        g.setFont(sansFont);
         g.drawText("PRE GAIN",  juce::Rectangle<int>( 20, 100,  80, 20), juce::Justification::topLeft, false);
         g.drawText("POST GAIN", juce::Rectangle<int>(162, 100, 100, 20), juce::Justification::topLeft, false);
         g.drawText("BLEND",     juce::Rectangle<int>(322, 100,  60, 20), juce::Justification::topLeft, false);

@@ -43,6 +43,7 @@ private:
     void bitInit();
     void timerCallback() override;
 
+    juce::Font sansFont = juce::Font(juce::Font::getDefaultSansSerifFontName(), 18.0f, juce::Font::plain);
     LookAndFeel newLook;
     uint8_t currentSample{ 0 };
     juce::Font theFont;
