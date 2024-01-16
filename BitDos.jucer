@@ -2,8 +2,9 @@
 
 <JUCERPROJECT id="vEorUV" name="BitDOS" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              pluginFormats="buildVST3" pluginVST3Category="Distortion,Fx"
-              pluginManufacturer="_astriid_" cppLanguageStandard="17" pluginDesc="Bit-inversion Distortion">
+              pluginFormats="buildLV2,buildVST3" pluginVST3Category="Distortion,Fx"
+              pluginManufacturer="_astriid_" cppLanguageStandard="17" pluginDesc="Bit-inversion Distortion"
+              lv2Uri="http://lv2plug.in/ns/ext/uri-map/BitDOS">
   <MAINGROUP id="CesUeg" name="BitDOS">
     <GROUP id="{41D9674B-C42C-D48E-066B-AD74628F42AB}" name="res">
       <FILE id="Qc8gAE" name="bitdos_badge.png" compile="0" resource="1"
