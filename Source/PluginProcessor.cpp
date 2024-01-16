@@ -262,21 +262,19 @@ juce::AudioProcessorValueTreeState::ParameterLayout BitDosAudioProcessor::create
 
     for (int i = 8; i >= 1; i--)
     {
-        std::stringstream ss;
+        const juce::String bit = "Bit " + juce::String(i + 1);
 
-        ss << "Bit " << i;
-
-        parameters.push_back(std::make_unique<juce::AudioParameterInt>(juce::String(ss.str()).toUpperCase(),
-            juce::String(ss.str()), 1, 3, 1));
+        parameters.push_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID{ bit.toUpperCase(), 1 },
+            bit, 1, 3, 1));
     }
 
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("PRE GAIN", "Pre Gain",
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "PRE GAIN", 1 }, "Pre Gain",
         juce::NormalisableRange<float>(0.0f, 2.0f, 0.001f), 1.0f));
 
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("POST GAIN", "Post Gain",
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "POST GAIN", 1 }, "Post Gain",
         juce::NormalisableRange<float>(0.0f, 2.0f, 0.001f), 1.0f));
 
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("BLEND", "Blend",
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "BLEND", 1 }, "Blend",
         juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 1.0f));
 
     return  { parameters.begin(), parameters.end() };
@@ -302,11 +300,9 @@ void BitDosAudioProcessor::readBits()
 {
     for (int i = 7; i >= 0; i--)
     {
-        std::stringstream ss;
+        const juce::String bit = "BIT " + juce::String(i + 1);
 
-        ss << "BIT " << (i + 1);
-
-        bitSet[i] = (BitSelect)(int)APVTS.getRawParameterValue(juce::String(ss.str()))->load();
+        bitSet[i] = (BitSelect)(int)APVTS.getRawParameterValue(bit)->load();
 
         switch (bitSet[i])
         {

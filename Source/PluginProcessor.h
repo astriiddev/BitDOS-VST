@@ -87,19 +87,13 @@ public:
         APVTS.state.setProperty("bypass", (bool)isBypassed, nullptr);
     }
 
-    void setBitSet(BitSelect select, int bit) 
+    void setBitSet(BitSelect select, int i)
     {
-        std::stringstream ss;
+        const juce::String bit = "BIT " + juce::String(i + 1);
 
-        bitSet[bit] = select; 
-
-        ss << "BIT " << (bit + 1);
-
-        APVTS.getParameter(juce::String(ss.str()))->beginChangeGesture();
-
-        APVTS.getParameterAsValue(juce::String(ss.str())).setValue(select);
-
-        APVTS.getParameter(juce::String(ss.str()))->endChangeGesture();
+        APVTS.getParameter(bit)->beginChangeGesture();
+        APVTS.getParameterAsValue(bit).setValue(select);
+        APVTS.getParameter(bit)->endChangeGesture();
     }
 
     BitSelect& getBitSet(int bit) { return bitSet[bit]; }
