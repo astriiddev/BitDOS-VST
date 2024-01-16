@@ -179,7 +179,7 @@ private:
 
     bool bitMode{ true };
 
-    float currentSample{ 0.0f };
+    float currentSample{ 0.0f }, muteCounter{ 0.0f };
 
     std::atomic<float> preGain { 1.0f };
     std::atomic<float> postGain{ 1.0f };

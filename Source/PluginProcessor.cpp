@@ -157,28 +157,64 @@ void BitDosAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     if (paramsUpdated) updateParams();
     if (isBypassed) return;
     
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* sampRead = buffer.getReadPointer(channel);
-        auto* sampWrite = buffer.getWritePointer(channel);
+    int numSamples = buffer.getNumSamples();
 
-        int numSamples = buffer.getNumSamples();
-        while (--numSamples >= 0)
+    const float* inL = buffer.getReadPointer(0);
+    const float* inR = totalNumInputChannels > 1 ? buffer.getReadPointer(1) : nullptr;
+
+    float* outL = buffer.getWritePointer(0);
+    float* outR = totalNumOutputChannels > 1 ? buffer.getWritePointer(1) : nullptr;
+
+    while (--numSamples >= 0)
+    {
+        float out[2] = { 0.f, 0.f };
+
+        float sampL = *inL++;
+        float sampR = inR == nullptr ? sampL : *inR++;
+
+        uint8_t bitSampleR = 0;
+
+        currentSample = sampL == 0.f ? sampR : sampL;
+
+        if (std::abs(sampL) <= 0.01f && std::abs(sampR) <= 0.01f) 
+        { 
+            bitSample = 0; 
+            muteCounter += 1.f; 
+        }
+        else if (bitZeroed == 255) 
         {
-            currentSample = *sampRead++;
-            if (currentSample == 0) { bitSample = 0; continue; }
-            if (bitZeroed == 255) { *sampWrite++ = bitSample = 0; continue; }
+            bitSample = 0; 
+            muteCounter += 1.f; 
+        }
+        else muteCounter = 0.f;
                 
-            if (signedMode)
-            {
-                bitSample = (clamp_int8((int_fast16_t)((currentSample * preGain) * 127.5f)) ^ bitInvert) & ~bitZeroed;
-                *sampWrite++ = clamp_float(((blend * ((float)(int_fast8_t)bitSample / 128)) + (currentSample * -(blend - 1))) * postGain);
-            }
-            else
-            {
-                bitSample = (clamp_uint8((int_fast16_t)(((currentSample * preGain) + 1.0) * 127.5f)) ^ bitInvert) & ~bitZeroed;
-                *sampWrite++ = clamp_float(((blend * (((float)bitSample / 128) - 1.0f)) + (currentSample * -(blend - 1))) * postGain);
-            }
+        if (signedMode)
+        {
+            bitSample  = (clamp_int8((int_fast16_t)((sampL * preGain) * 127.5f)) ^ bitInvert) & ~bitZeroed;
+            bitSampleR = (clamp_int8((int_fast16_t)((sampR * preGain) * 127.5f)) ^ bitInvert) & ~bitZeroed;
+
+            out[0] = clamp_float(((blend * ((float)(int_fast8_t)bitSample  / 128)) + (sampL * -(blend - 1))) * postGain);
+            out[1] = clamp_float(((blend * ((float)(int_fast8_t)bitSampleR / 128)) + (sampR * -(blend - 1))) * postGain);
+        }
+        else
+        {
+            bitSample  = (clamp_uint8((int_fast16_t)(((sampL * preGain) + 1.0) * 127.5f)) ^ bitInvert) & ~bitZeroed;
+            bitSampleR = (clamp_uint8((int_fast16_t)(((sampR * preGain) + 1.0) * 127.5f)) ^ bitInvert) & ~bitZeroed;
+
+            out[0] = clamp_float(((blend * (((float)bitSample  / 128) - 1.0f)) + (sampL * -(blend - 1))) * postGain);
+            out[1] = clamp_float(((blend * (((float)bitSampleR / 128) - 1.0f)) + (sampR * -(blend - 1))) * postGain);
+        }
+
+        if (sampL == 0.f) bitSample = bitSampleR;
+
+        if (outR == nullptr)
+        {
+            *outL++ = muteCounter >= 128.f ? (out[0] + out[1]) * 64.f / muteCounter : (out[0] + out[1]) * 0.5f;
+        }
+        else
+        {
+            *outL++ = muteCounter >= 128.f ? out[0] * 128.f / muteCounter : out[0];
+            *outR++ = muteCounter >= 128.f ? out[1] * 128.f / muteCounter : out[1];
         }
     }
     
@@ -206,8 +242,6 @@ void BitDosAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 void BitDosAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
-
-    /* Recalls ADSR, loaded sample, loop points, loop enable state, and ASCII note base */
 
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName(APVTS.state.getType()))
