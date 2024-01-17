@@ -3,10 +3,12 @@
 <JUCERPROJECT id="vEorUV" name="BitDOS" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               pluginFormats="buildVST3" pluginVST3Category="Distortion,Fx"
-              pluginManufacturer="_astriid_" cppLanguageStandard="latest" pluginDesc="Bit-inversion Distortion">
+              pluginManufacturer="_astriid_" cppLanguageStandard="17" pluginDesc="Bit-inversion Distortion">
   <MAINGROUP id="CesUeg" name="BitDOS">
     <GROUP id="{41D9674B-C42C-D48E-066B-AD74628F42AB}" name="res">
-      <FILE id="ARrwfh" name="bitdos_gui.png" compile="0" resource="1" file="res/bitdos_gui.png"/>
+      <FILE id="Qc8gAE" name="bitdos_badge.png" compile="0" resource="1"
+            file="res/bitdos_badge.png"/>
+      <FILE id="RoJhNN" name="bitdos_gui.png" compile="0" resource="1" file="res/bitdos_gui.png"/>
       <FILE id="rqjtw7" name="bitdos_on.png" compile="0" resource="1" file="res/bitdos_on.png"/>
       <FILE id="jpXOk3" name="floppy_btn.png" compile="0" resource="1" file="res/floppy_btn.png"/>
       <FILE id="Wmc9YY" name="seg_7.otf" compile="0" resource="1" file="res/seg_7.otf"/>
@@ -17,8 +19,6 @@
       <FILE id="BQVc9x" name="NumberScreen.cpp" compile="1" resource="0"
             file="Source/NumberScreen.cpp"/>
       <FILE id="Htc3c8" name="NumberScreen.h" compile="0" resource="0" file="Source/NumberScreen.h"/>
-      <FILE id="W7NZAR" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/LookAndFeel.cpp"/>
-      <FILE id="WMy0kg" name="LookAndFeel.h" compile="0" resource="0" file="Source/LookAndFeel.h"/>
       <FILE id="h66Zmz" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="amejnI" name="PluginProcessor.h" compile="0" resource="0"

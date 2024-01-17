@@ -29,15 +29,13 @@ public:
 
 private:
     void buttonClicked(juce::Button* button) override;
-    void buttonStateChanged(juce::Button* button) override;
     void mouseMove(const juce::MouseEvent&) override {}
+
+    void initImgButton(juce::ImageButton*, const float up, const float down, const void* imgData, const int dataSize);
 
     juce::ImageComponent bgImg;
 
-    juce::ImageButton onBtn;
-    juce::ImageButton fpBtn;
-
-    juce::TextButton badge;
+    juce::ImageButton onBtn, fpBtn, bdgBtn;
 
     const juce::Rectangle<int> onLED{ 122, 94, 23, 10 };
 

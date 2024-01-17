@@ -12,7 +12,7 @@
 #include "NumberScreen.h"
 
 //==============================================================================
-NumberScreen::NumberScreen(BitDosAudioProcessor& p) : newLook(), audioProcessor(p)
+NumberScreen::NumberScreen(BitDosAudioProcessor& p) : audioProcessor(p)
 {
     startTimer(60);
 
@@ -21,7 +21,6 @@ NumberScreen::NumberScreen(BitDosAudioProcessor& p) : newLook(), audioProcessor(
 
 NumberScreen::~NumberScreen()
 {
-    juce::LookAndFeel::setDefaultLookAndFeel(nullptr);
 }
 
 void NumberScreen::paint (juce::Graphics& g)
@@ -37,9 +36,7 @@ void NumberScreen::paint (juce::Graphics& g)
 
     currentSample = audioProcessor.getBitSample();
 
-    theFont = newLook.getCustomFont();
-    theFont.setHeight(83);
-    g.setFont(theFont);
+    g.setFont(sevenSegFont.withHeight(83.f));
 
     g.setColour(juce::Colour(0xad00102b));
 
@@ -111,6 +108,8 @@ void NumberScreen::mouseDown(const juce::MouseEvent& e)
     const juce::Point<int> mouseDownPos = e.getMouseDownPosition();
     const int numClicks = e.getNumberOfClicks();
 
+    lastMouseY = e.position.y;
+
     if(audioProcessor.inBitMode())
     {
         for (int i = 7; i >= 0; i--)
@@ -160,7 +159,6 @@ void NumberScreen::mouseMove(const juce::MouseEvent& e)
 
     for (int i = 7; i >= 0; i--)
     {
-
         if (bits[i].rect.contains(mousePos))
         {
             mouseOverBit = i;
@@ -174,40 +172,22 @@ void NumberScreen::mouseMove(const juce::MouseEvent& e)
 
 void NumberScreen::mouseDrag(const juce::MouseEvent& e)
 {
-    float gainChange = 0.0f,
-        gainChangeScale = -2000.0f;
-
-    static float lastMouseY = 0.0f;
+    float gainChange = 0.0f;
 
     if (audioProcessor.inBitMode()) return;
 
-    const float mouseDragY = (float)e.getDistanceFromDragStartY();
-
-    if (lastMouseY > abs(mouseDragY))
-        gainChangeScale = 2000.0f;
+    gainChange = (lastMouseY - e.position.y) / 400.f;
 
     if (editingPreGain)
-    {
-        gainChange = mouseDragY / gainChangeScale;
-
         audioProcessor.setPreGain(audioProcessor.getPreGain() + gainChange);
-    }
 
     if (editingPostGain)
-    {
-        gainChange = mouseDragY / gainChangeScale;
-
         audioProcessor.setPostGain(audioProcessor.getPostGain() + gainChange);
-    }
 
     if (editingBlend)
-    {
-        gainChange = mouseDragY / gainChangeScale;
-
         audioProcessor.setBlend(audioProcessor.getBlend() + gainChange);
-    }
 
-    lastMouseY = abs(mouseDragY);
+    lastMouseY = e.position.y;
 }
 
 void NumberScreen::mouseUp(const juce::MouseEvent&)

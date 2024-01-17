@@ -12,7 +12,6 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "LookAndFeel.h"
 
 //==============================================================================
 /*
@@ -37,17 +36,17 @@ public:
 
     void handleBitClick(int bit);
 
-    void setFont(const juce::Font newFont) { theFont = newFont; }
-
 private:
     void bitInit();
     void timerCallback() override;
 
-    juce::Font sansFont = juce::Font(juce::Font::getDefaultSansSerifFontName(), 18.0f, juce::Font::plain);
-    LookAndFeel newLook;
-    uint8_t currentSample{ 0 };
-    juce::Font theFont;
+    const juce::Font sansFont = juce::Font(juce::Font::getDefaultSansSerifFontName(),
+                                           18.0f, juce::Font::plain);
 
+    const juce::Font sevenSegFont = juce::Font(juce::Typeface::createSystemTypefaceFor(BinaryData::seg_7_otf, 
+                                                                            BinaryData::seg_7_otfSize));
+
+    uint8_t currentSample{ 0 };
 
     bool editingPreGain { false },
          editingPostGain{ false },
@@ -78,6 +77,8 @@ private:
                           {{  10, bitY, bitW, bitH }, LED_GRN } };
 
     const juce::Rectangle<int> screenNums { 10, bitY, 388, bitH };
+
+    float lastMouseY = 0.0f;
 
     BitDosAudioProcessor& audioProcessor;
 

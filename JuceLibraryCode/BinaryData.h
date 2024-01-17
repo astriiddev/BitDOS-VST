@@ -8,8 +8,11 @@
 
 namespace BinaryData
 {
+    extern const char*   bitdos_badge_png;
+    const int            bitdos_badge_pngSize = 23226;
+
     extern const char*   bitdos_gui_png;
-    const int            bitdos_gui_pngSize = 8366308;
+    const int            bitdos_gui_pngSize = 8358640;
 
     extern const char*   bitdos_on_png;
     const int            bitdos_on_pngSize = 479348;
@@ -21,7 +24,7 @@ namespace BinaryData
     const int            seg_7_otfSize = 10464;
 
     // Number of elements in the namedResourceList and originalFileNames arrays.
-    const int namedResourceListSize = 4;
+    const int namedResourceListSize = 5;
 
     // Points to the start of a list of resource names.
     extern const char* namedResourceList[];
