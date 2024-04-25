@@ -22,3 +22,7 @@ Change the mode from unsigned 8bits to signed 8bits by clicking the floppy drive
 (Hint: green floppy LED is unsigned mode, red is signed mode)
 
 Perfect for industrial, EBM, harsh noise wall, or whatever genre where you just wanna destroy your sound!
+
+<a href="https://www.paypal.com/donate/?hosted_button_id=HXGUCB6MBN43Y">
+  <img src="https://raw.githubusercontent.com/stefan-niedermann/paypal-donate-button/master/paypal-donate-button.png" alt="Donate with PayPal" />
+</a>
