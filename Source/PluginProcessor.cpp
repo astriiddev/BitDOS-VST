@@ -142,22 +142,13 @@ static uint_fast8_t clamp_uint8(const int_fast16_t samp)
 
 static float clamp_float(const float samp)
 {
-    return (abs(samp) < 1.0) ? samp : (samp < 0) ? -1 : 1 ;
+    return samp > 1 ? 1.0f : samp < -1 ? -1.0f : samp;
 }
 
 void BitDosAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
-    juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    if (paramsUpdated) updateParams();
-    if (isBypassed) return;
-    
-    int numSamples = buffer.getNumSamples();
+    const int totalNumInputChannels  = getTotalNumInputChannels();
+    const int totalNumOutputChannels = getTotalNumOutputChannels();
 
     const float* inL = buffer.getReadPointer(0);
     const float* inR = totalNumInputChannels > 1 ? buffer.getReadPointer(1) : nullptr;
@@ -165,6 +156,13 @@ void BitDosAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     float* outL = buffer.getWritePointer(0);
     float* outR = totalNumOutputChannels > 1 ? buffer.getWritePointer(1) : nullptr;
 
+    int numSamples = buffer.getNumSamples();
+
+    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+        buffer.clear (i, 0, buffer.getNumSamples());
+
+    if (isBypassed) return;
+    
     while (--numSamples >= 0)
     {
         float out[2] = { 0.f, 0.f };
@@ -236,6 +234,15 @@ void BitDosAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = APVTS.copyState();
     std::unique_ptr<juce::XmlElement> xml(state.createXml());
+
+    for(int i = 0; i < xml->getNumChildElements(); i++)
+    {
+        juce::String attrib(xml->getChildElement(i)->getStringAttribute("id"));
+        if(attrib.isEmpty()) continue;
+        if(!attrib.contains(" ")) continue;
+        xml->removeChildElement(xml->getChildElement(i), true);
+    }
+
     copyXmlToBinary(*xml, destData);
 }
 
@@ -243,84 +250,100 @@ void BitDosAudioProcessor::setStateInformation (const void* data, int sizeInByte
 {
     std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
 
-    if (xmlState.get() != nullptr)
-        if (xmlState->hasTagName(APVTS.state.getType()))
-        {
-            APVTS.replaceState(juce::ValueTree::fromXml(*xmlState));
+    if (xmlState.get() == nullptr) return;
+    if (!xmlState->hasTagName(APVTS.state.getType())) return;
 
-            updateParams();
+    APVTS.replaceState(juce::ValueTree::fromXml(*xmlState));
 
-            signedMode = (bool)APVTS.state.getProperty("mode");
-            isBypassed = (bool)APVTS.state.getProperty("bypass");
+    for(int i = 0; i < APVTS.state.getNumChildren(); i++)
+    {
+        juce::ValueTree param = APVTS.state.getChild(i);
+        if (param.getNumProperties() < 2) continue;
+        valueTreePropertyChanged(param, param.getPropertyName(1));
+    }
 
-        }
+    signedMode = APVTS.state.getProperty("mode").operator bool();
+    isBypassed = APVTS.state.getProperty("bypass").operator bool();
+}
+
+std::unique_ptr<juce::AudioParameterInt> BitDosAudioProcessor::createParam(const juce::String& name, const int min, const int max, const int def)
+{
+    return std::make_unique<juce::AudioParameterInt>(juce::ParameterID{ name.toUpperCase(), 1 }, name, min, max, def);
+}
+
+std::unique_ptr<juce::AudioParameterFloat> BitDosAudioProcessor::createParam(const juce::String &name, const float& min, const float& max, const float& inc, const float def)
+{
+    return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ name.toUpperCase(), 1 }, name, juce::NormalisableRange<float>(min, max, inc), def);
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout BitDosAudioProcessor::createParameters()
 {
-    std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters(11);
 
-    for (int i = 8; i >= 1; i--)
+    for (int i = 7; i >= 0; i--)
     {
-        const juce::String bit = "Bit " + juce::String(i + 1);
-
-        parameters.push_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID{ bit.toUpperCase(), 1 },
-            bit, 1, 3, 1));
+        const char bitTxt[] = { 'B', 'i', 't', static_cast<char>(i + 0x31), '\0' };
+        parameters.operator[](i) = createParam(juce::String(bitTxt, 5), 1, 3, 1);
     }
 
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "PRE GAIN", 1 }, "Pre Gain",
-        juce::NormalisableRange<float>(0.0f, 2.0f, 0.001f), 1.0f));
-
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "POST GAIN", 1 }, "Post Gain",
-        juce::NormalisableRange<float>(0.0f, 2.0f, 0.001f), 1.0f));
-
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{ "BLEND", 1 }, "Blend",
-        juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 1.0f));
+    parameters.operator[](8)  = createParam("PreGain",  0.0f, 2.0f, 0.001f, 1.0f);
+    parameters.operator[](9)  = createParam("PostGain", 0.0f, 2.0f, 0.001f, 1.0f);
+    parameters.operator[](10) = createParam("Blend",    0.0f, 2.0f, 0.001f, 1.0f);
 
     return  { parameters.begin(), parameters.end() };
 }
 
-void BitDosAudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&)
+void BitDosAudioProcessor::valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, const juce::Identifier& property)
 {
-    paramsUpdated = true;
-}
+    const char* changedParam = treeWhosePropertyHasChanged.getProperty(treeWhosePropertyHasChanged.getPropertyName(0)).toString().toRawUTF8();
+    const juce::var paramVal = treeWhosePropertyHasChanged.getProperty(property);
 
-void BitDosAudioProcessor::updateParams()
-{
-    readBits();
-
-    preGain = APVTS.getRawParameterValue("PRE GAIN")->load();
-    postGain = APVTS.getRawParameterValue("POST GAIN")->load();
-    blend = APVTS.getRawParameterValue("BLEND")->load();
-
-    paramsUpdated = false;
-}
-
-void BitDosAudioProcessor::readBits()
-{
-    for (int i = 7; i >= 0; i--)
+    if(std::strstr(changedParam, "BIT") != nullptr)
     {
-        const juce::String bit = "BIT " + juce::String(i + 1);
+        const int bit = changedParam[3] == ' ' ? changedParam[4] : changedParam[3];
+        readBits(bit - 0x31, static_cast<BitSelect>(paramVal.operator int()));
+        return;
+    }
 
-        bitSet[i] = (BitSelect)(int)APVTS.getRawParameterValue(bit)->load();
+    if(std::strstr(changedParam, "PRE") != nullptr)
+    {
+        preGain.store(paramVal.operator float());
+        return;
+    }
 
-        switch (bitSet[i])
-        {
-        case (NORMAL_BIT):
+    if(std::strstr(changedParam, "POST") != nullptr)
+    {
+        postGain.store(paramVal.operator float());
+        return;
+    }
 
-            resetBit(i);
-            break;
+    if(std::strstr(changedParam, "BLEND") != nullptr)
+    {
+        blend.store(paramVal.operator float());
+        return;
+    }
+}
 
-        case (INVERT_BIT):
+void BitDosAudioProcessor::readBits(const int bit, const BitSelect select)
+{
+    bitSet[bit] = select;
 
-            setBitInvert(i);
-            break;
+    switch (bitSet[bit])
+    {
+    case (NORMAL_BIT):
 
-        case (HARD_0_BIT):
+        resetBit(bit);
+        break;
 
-            setBitZeroed(i);
-            break;
-        }
+    case (INVERT_BIT):
+
+        setBitInvert(bit);
+        break;
+
+    case (HARD_0_BIT):
+
+        setBitZeroed(bit);
+        break;
     }
 }
 

@@ -89,7 +89,7 @@ public:
 
     void setBitSet(BitSelect select, int i)
     {
-        const juce::String bit = "BIT " + juce::String(i + 1);
+        const char bit[] = { 'B', 'I', 'T', static_cast<char>(i + 0x31), '\0' };
 
         APVTS.getParameter(bit)->beginChangeGesture();
         APVTS.getParameterAsValue(bit).setValue(select);
@@ -103,7 +103,6 @@ public:
     void setSignedMode() 
     {
         signedMode = !signedMode;
-
         APVTS.state.setProperty("mode", (bool)signedMode, nullptr);
     }
 
@@ -114,30 +113,26 @@ public:
 
     void setPreGain(float gain)
     {
-        APVTS.getParameter("PRE GAIN")->beginChangeGesture();
+        APVTS.getParameter("PREGAIN")->beginChangeGesture();
 
-        if(gain >= 2.0) APVTS.getParameterAsValue("PRE GAIN").setValue(2.0f);
+        if(gain >= 2.0) APVTS.getParameterAsValue("PREGAIN").setValue(2.0f);
+        else if (gain <= 0.0) APVTS.getParameterAsValue("PREGAIN").setValue(0.0f);
+        else APVTS.getParameterAsValue("PREGAIN").setValue(gain);
 
-        else if (gain <= 0.0) APVTS.getParameterAsValue("PRE GAIN").setValue(0.0f);
-
-        else APVTS.getParameterAsValue("PRE GAIN").setValue(gain);
-
-        APVTS.getParameter("PRE GAIN")->endChangeGesture();
+        APVTS.getParameter("PREGAIN")->endChangeGesture();
     }
 
     std::atomic<float>& getPostGain() { return postGain; }
 
     void setPostGain(float gain)
     {
-        APVTS.getParameter("POST GAIN")->beginChangeGesture();
+        APVTS.getParameter("POSTGAIN")->beginChangeGesture();
 
-        if (gain >= 2.0) APVTS.getParameterAsValue("POST GAIN").setValue(2.0f);
+        if (gain >= 2.0) APVTS.getParameterAsValue("POSTGAIN").setValue(2.0f);
+        else if (gain <= 0.0) APVTS.getParameterAsValue("POSTGAIN").setValue(0.0f);
+        else APVTS.getParameterAsValue("POSTGAIN").setValue(gain);
 
-        else if (gain <= 0.0) APVTS.getParameterAsValue("POST GAIN").setValue(0.0f);
-
-        else APVTS.getParameterAsValue("POST GAIN").setValue(gain);
-
-        APVTS.getParameter("POST GAIN")->endChangeGesture();
+        APVTS.getParameter("POSTGAIN")->endChangeGesture();
     }
 
     std::atomic<float>& getBlend() { return blend; }
@@ -146,9 +141,7 @@ public:
         APVTS.getParameter("BLEND")->beginChangeGesture();
 
         if (vol >= 1.0) APVTS.getParameterAsValue("BLEND").setValue(1.0f);
-
         else if (vol <= 0.0) APVTS.getParameterAsValue("BLEND").setValue(0.0f);
-
         else APVTS.getParameterAsValue("BLEND").setValue(vol);
 
         APVTS.getParameter("BLEND")->endChangeGesture();
@@ -168,24 +161,18 @@ private:
     void valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, 
                                   const juce::Identifier& property) override;
 
-    void updateParams();
-    void readBits();
+    std::unique_ptr<juce::AudioParameterInt> createParam(const juce::String& name, const int min, const int max, const int def);
+    std::unique_ptr<juce::AudioParameterFloat> createParam(const juce::String &name, const float& min, const float& max, const float& inc, const float def);
+
+    void readBits(const int bit, const BitSelect select);
 
     bool bitMode{ true };
 
     float currentSample{ 0.0f }, muteCounter{ 0.0f };
 
-    std::atomic<float> preGain { 1.0f };
-    std::atomic<float> postGain{ 1.0f };
-    std::atomic<float> blend   { 1.0f };
-
-    std::atomic<bool> signedMode{ false };
-    std::atomic<bool> isBypassed{ false };
-    std::atomic<bool> paramsUpdated{ false };
-
-    std::atomic<uint_fast8_t> bitInvert { 0 };
-    std::atomic<uint_fast8_t> bitZeroed { 0 };
-    std::atomic<uint_fast8_t> bitSample { 0 };
+    std::atomic<float> preGain { 1.0f }, postGain{ 1.0f }, blend   { 1.0f };
+    std::atomic<bool> signedMode{ false }, isBypassed{ false }, paramsUpdated{ false };
+    std::atomic<uint_fast8_t> bitInvert { 0 }, bitZeroed { 0 }, bitSample { 0 };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BitDosAudioProcessor)

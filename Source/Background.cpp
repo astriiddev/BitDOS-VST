@@ -14,12 +14,10 @@
 //==============================================================================
 Background::Background(BitDosAudioProcessor& p) : audioProcessor(p)
 {
+    const juce::Image bg = juce::ImageCache::getFromMemory(BinaryData::bitdos_gui_png, BinaryData::bitdos_gui_pngSize);
+
     addAndMakeVisible(bgImg);
 
-    onBtn.setClickingTogglesState(true);
-    setRepaintsOnMouseActivity(false);
-    const juce::Image bg = juce::ImageCache::getFromMemory(BinaryData::bitdos_gui_png, 
-                                                           BinaryData::bitdos_gui_pngSize);
     if (!bg.isNull())
         bgImg.setImage(bg, juce::RectanglePlacement::stretchToFit);
     else
@@ -30,6 +28,9 @@ Background::Background(BitDosAudioProcessor& p) : audioProcessor(p)
     initImgButton(&onBtn, 1.0f, 0.0f, BinaryData::bitdos_on_png, BinaryData::bitdos_on_pngSize);
 
     bgImg.setBufferedToImage(true);
+
+    onBtn.setClickingTogglesState(true);
+    setRepaintsOnMouseActivity(false);
 }
 
 Background::~Background()
@@ -88,8 +89,8 @@ void Background::initImgButton(juce::ImageButton* b, const float up, const float
 {
     juce::Image img;
 
-    if (b == nullptr) return;
-    if (imgData == nullptr) return;
+    jassert(b != nullptr);
+    jassert(imgData != nullptr);
 
     img = juce::ImageCache::getFromMemory(imgData, dataSize);
 
@@ -109,6 +110,4 @@ void Background::initImgButton(juce::ImageButton* b, const float up, const float
                  img, up, juce::Colours::transparentWhite,
                  img, up, juce::Colours::transparentWhite,
                  img, down, juce::Colours::transparentWhite);
-
-    b->setBufferedToImage(true);
 }

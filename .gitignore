@@ -363,3 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 /Builds
 /bit.7z
+
+/.vscode
+/.vscode/** 

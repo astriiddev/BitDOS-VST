@@ -40,11 +40,8 @@ private:
     void bitInit();
     void timerCallback() override;
 
-    const juce::Font sansFont = juce::Font(juce::Font::getDefaultSansSerifFontName(),
-                                           18.0f, juce::Font::plain);
-
-    const juce::Font sevenSegFont = juce::Font(juce::Typeface::createSystemTypefaceFor(BinaryData::seg_7_otf, 
-                                                                            BinaryData::seg_7_otfSize));
+    const juce::Font sansFont = juce::Font(juce::FontOptions(juce::Font::getDefaultSansSerifFontName(), 18.0f, juce::Font::plain));
+    const juce::Font sevenSegFont = juce::Font(juce::FontOptions(juce::Typeface::createSystemTypefaceFor(BinaryData::seg_7_otf, BinaryData::seg_7_otfSize)));
 
     uint8_t currentSample{ 0 };
 

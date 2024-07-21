@@ -46,10 +46,10 @@ void NumberScreen::paint (juce::Graphics& g)
     {
         for (int i = 7; i >= 0; i--)
         {
-            juce::String bitScreen = juce::String((currentSample & (1 << i)) >> i);
+            const char bitScreen[] = { static_cast<char>(0x30 + ((currentSample & (1 << i)) >> i)), '\0' };
 
             g.setColour(bits[i].color);
-            g.drawText(bitScreen, bits[i].rect, juce::Justification::topLeft, false);
+            g.drawText(juce::String(bitScreen, 2), bits[i].rect, juce::Justification::topLeft, false);
 
             g.setColour(juce::Colour(0x20d3d3d3));
 
@@ -62,7 +62,7 @@ void NumberScreen::paint (juce::Graphics& g)
     }
     else
     {
-        volEdit(g, 7, 6, (audioProcessor.getPreGain() * 127.5f), editingPreGain);
+        volEdit(g, 7, 6, (audioProcessor.getPreGain()  * 127.5f), editingPreGain);
         volEdit(g, 4, 3, (audioProcessor.getPostGain() * 127.5f), editingPostGain);
         volEdit(g, 1, 0, (audioProcessor.getBlend()    * 255.0f), editingBlend);
 
@@ -73,6 +73,7 @@ void NumberScreen::paint (juce::Graphics& g)
         g.drawText("POST GAIN", juce::Rectangle<int>(162, 100, 100, 20), juce::Justification::topLeft, false);
         g.drawText("BLEND",     juce::Rectangle<int>(322, 100,  60, 20), juce::Justification::topLeft, false);
     }
+
 }
 
 void NumberScreen::resized()
@@ -81,7 +82,7 @@ void NumberScreen::resized()
 
 void NumberScreen::volEdit(juce::Graphics& g, int bit1, int bit2, float param, bool isEditing)
 {
-    uint8_t float2nib = (uint8_t)round(param);
+    uint8_t float2nib = (uint8_t)std::round(param);
 
     juce::String bitScreen = juce::String::toHexString((float2nib & ~0x0F) >> 4).toUpperCase();
 
@@ -129,25 +130,37 @@ void NumberScreen::mouseDown(const juce::MouseEvent& e)
             editingPreGain = true;
 
             if (numClicks >= 2)
+            {
                 audioProcessor.setPreGain(1.0f);
+                repaint(bits[7].rect);
+                repaint(bits[6].rect);
+            }
         }
 
-        if (bits[4].rect.contains(mouseDownPos) ||
+        else if (bits[4].rect.contains(mouseDownPos) ||
             bits[3].rect.contains(mouseDownPos))
         {
             editingPostGain = true;
 
             if (numClicks >= 2)
+            {
                 audioProcessor.setPostGain(1.0f);
+                repaint(bits[4].rect);
+                repaint(bits[3].rect);
+            }
         }
 
-        if (bits[1].rect.contains(mouseDownPos) ||
+        else if (bits[1].rect.contains(mouseDownPos) ||
             bits[0].rect.contains(mouseDownPos))
         {
             editingBlend = true;
 
             if (numClicks >= 2)
+            {
                 audioProcessor.setBlend(1.0f);
+                repaint(bits[1].rect);
+                repaint(bits[0].rect);
+            }
         }
     }
 }
@@ -200,9 +213,7 @@ void NumberScreen::mouseUp(const juce::MouseEvent&)
 void NumberScreen::mouseExit(const juce::MouseEvent&)
 {
     for (int i = 7; i >= 0; i--)
-    {
         repaint(bits[i].rect);
-    }
 
     mouseOverBit = -1;
 }
