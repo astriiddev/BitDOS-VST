@@ -47,10 +47,10 @@ private:
 
     bool editingPreGain { false },
          editingPostGain{ false },
-         editingBlend   { false };
+         editingBlend   { false },
+         lastMode       { false };
 
     const int bitW{ 49 }, bitY{ 12 }, bitH{ 70 };
-
     int mouseOverBit{ -1 };
    
     typedef struct
@@ -75,7 +75,8 @@ private:
 
     const juce::Rectangle<int> screenNums { 10, bitY, 388, bitH };
 
-    float lastMouseY = 0.0f;
+    float lastMouseY = 0.0f, lastSamp = 0.0f;
+    juce::Point<int> lastMousePos = { 0, 0 };
 
     BitDosAudioProcessor& audioProcessor;
 

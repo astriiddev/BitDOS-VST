@@ -276,10 +276,6 @@ void NumberScreen::bitInit()
 
 void NumberScreen::timerCallback()
 {
-    static bool lastMode = false;
-    static juce::Point<int> lastMousePos = { 0, 0 };
-    static float lastSamp = 0.0f;
-    
     if (audioProcessor.getBypassState()) return;
 
     const juce::Point<int> mousePos = getMouseXYRelative();
